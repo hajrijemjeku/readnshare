@@ -1,12 +1,12 @@
 <?php session_start();
 include 'db.php';
 ob_start();
-
 //error_reporting(E_ALL);
     
     spl_autoload_register(function ($class_name) {
         include $class_name . '.php';
     });
+    
 
 ?>
 
@@ -36,17 +36,20 @@ ob_start();
                         <a class="nav-link active" aria-current="page" href="index.php">Home</a>
                     </li>
                     <li class="nav-item mx-4">
-                        <a class="nav-link active" aria-current="page" href="#">Books</a>
+                        <a class="nav-link active" aria-current="page" href="books.php">Books</a>
                     </li>
                     <li class="nav-item dropdown mx-4">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Genre
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#">Novel</a></li>
-                            <li><a class="dropdown-item" href="#">Poetry</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#">Romance</a></li>
+                            <?php 
+                                $genres = (new Crud($pdo))->select('genre',[],[],'','')->fetchAll();
+                                foreach($genres as $genre):
+                                 
+                            ?>
+                            <li><a class="dropdown-item" href="book_details.php?genre_id=<?=$genre['id'];?>"><?= $genre['name'] ?></a></li>
+                            <?php endforeach; ?>
                         </ul>
                     </li>
                     <li class="nav-item dropdown mx-4">
@@ -54,19 +57,24 @@ ob_start();
                             Category
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#">Children</a></li>
-                            <li><a class="dropdown-item" href="#">Adults</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#">Academic</a></li>
+                        <?php 
+                                $categories = (new Crud($pdo))->select('category',[],[],'','')->fetchAll();
+                                foreach($categories as $category):
+                                 
+                            ?>
+                            <li><a class="dropdown-item" href="book_details.php?category_id=<?=$category['id'];?>"><?= $category['name'] ?></a></li>
+                            <?php endforeach; ?>
                         </ul>
                     </li>
                     
                 </ul>
                 <div class="d-flex flex-column w-25" style="margin-right:80px;">
-                    <form class="d-flex my-2" role="search">
-                        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                        <button class="btn btn-outline-success" type="submit">Search</button>
+                    <?php if(basename($_SERVER['SCRIPT_FILENAME']) == "books.php"): ?>
+                    <form class="d-flex my-2" name="search-form"  method="get" action="<?= $_SERVER['REQUEST_URI']; ?>">
+                        <input class="form-control me-2" type="search" name="search-value" placeholder="Search" aria-label="Search">
+                        <button class="btn btn-outline-success" name="search-btn" type="submit">Search</button>
                     </form>
+                    <?php endif; ?>
                     <div class="d-flex justify-content-center">
                     <div class="dropdown mx-2 w-50">
                         <button type="button" class="btn btn-success dropdown-toggle w-100" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
