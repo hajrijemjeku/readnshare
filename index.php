@@ -35,59 +35,7 @@
 <div class="container mt-4">
 <h2 class="text-center mb-3" style="font-family: Arial, sans-serif; font-weight: bold; color: #7b9b77;">Our Latest Books</h2>
 <div class="row">
-        <!-- Sidebar for Filters -->
-        <div class="col-md-3 mt-4">
-            <div class="card p-3">
-                <h4>Filter by:</h4>
-                <div class="filter-section">
-                    <h5>Price Range</h5>
-                    <input type="range" min="0" max="100" value="50" class="form-range" id="priceRange">
-                    
-                    <h5>Language</h5>
-                    <select class="form-select mb-3" aria-label="Language Filter">
-                        <option selected>Choose Language</option>
-                        <option value="1">English</option>
-                        <option value="2">Albanian</option>
-                        <option value="3">French</option>
-                    </select>
-                    
-                    <h5>Author</h5>
-                    <select class="form-select mb-3" aria-label="Author Filter">
-                        <option selected>Choose Author</option>
-                        <option value="1">Author A</option>
-                        <option value="2">Author B</option>
-                        <option value="3">Author C</option>
-                    </select>
-                    
-                    <h5>Publication Year</h5>
-                    <select class="form-select mb-3" aria-label="Publication Year Filter">
-                        <option selected>Choose Year</option>
-                        <option value="new">New (Last 5 years)</option>
-                        <option value="old">Old (More than 5 years)</option>
-                    </select>
-                    
-                    <h5>Genre</h5>
-                    <select class="form-select mb-3" aria-label="Genre Filter">
-                        <option selected>Choose Genre</option>
-                        <option value="fiction">Fiction</option>
-                        <option value="non-fiction">Non-Fiction</option>
-                        <option value="fantasy">Fantasy</option>
-                    </select>
 
-                    <h5>Category</h5>
-                    <select class="form-select mb-3" aria-label="Category Filter">
-                        <option selected>Choose Category</option>
-                        <option value="best-sellers">Best Sellers</option>
-                        <option value="new-releases">New Releases</option>
-                        <option value="top-rated">Top Rated</option>
-                    </select>
-                    
-                    <button class="btn btn-primary w-100">Apply Filters</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-9">
             <div class="row mt-4">
                 <?php
                 $crudObj = new Crud($pdo);
@@ -122,7 +70,6 @@
                 </div>
                 <?php endforeach; } ?>
             </div>
-        </div>
     </div>
 
     <div class="row">
