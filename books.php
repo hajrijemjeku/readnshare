@@ -16,8 +16,21 @@
                         <form action="<?= $_SERVER['PHP_SELF'] ?>" method="get">
 
                         
-                        <!-- <h5>Price Range</h5>
-                        <input type="range" min="0" max="100" value="50" class="form-range" id="priceRange"> -->
+                        <h5>Price Range</h5>
+                        <div class="form-number">
+                            <?php
+                                $crudObj = new Crud($pdo);
+                                $minprice = $crudObj->select('book',['min(price)'],[],'','')->fetch();
+                                // echo "<pre>";
+                                // print_r($minprice['min(price)']);
+                                // echo "</pre>";
+
+                                $maxprice = $crudObj->select('book',['max(price)'],[],'','')->fetch();
+                                //print_r($maxprice[0]);
+                            ?>
+                            <input name="minprice" type="number" min="<?=$minprice[0]; ?>" max="<?= $maxprice[0] - 1;?>" value="" class="form-number" id="minPrice">
+                            <input name="maxprice" type="number" min="<?=$minprice[0]; ?>" max="<?= $maxprice[0];?>" value="" class="form-number" id="maxPrice">
+                        </div>
 
                         <h5>Language</h5>
                         <select name="language" class="form-select mb-3" aria-label="Language Filter">
@@ -95,6 +108,8 @@
                         $condition = $_GET['condition'] ?? null;
                         $genre = $_GET['genre'] ?? null;
                         $category = $_GET['category'] ?? null;
+                        $minprice = $_GET['minprice'] ?? null;
+                        $maxprice = $_GET['maxprice'] ?? null;
         
                         $filterConditions = [];
                         if (!empty($language)) {
@@ -107,15 +122,19 @@
                         if (!empty($genre)) {
                             $filterConditions['genreid'] = $genre;
                             $getgenre = $crudObj->select('genre', [], ['id'=>$genre], '', '')->fetch();
-
                         }
                         if (!empty($category)) {
                             $filterConditions['categoryid'] = $category;
                             $getcategory = $crudObj->select('category', [], ['id'=>$category], '', '')->fetch();
-
                         }
                         if (!($condition == null)) {
                             $filterConditions['isnew'] = $condition;
+                        } 
+                        if (!empty($minprice)) {
+                            $filterConditions['price >= '] = $minprice;
+                        }
+                        if (!empty($maxprice)) {
+                            $filterConditions['price <= '] = $maxprice;
                         }
                         
         
@@ -143,6 +162,12 @@
                             if (!($condition == null)) {
                                 $conditionsDisplay[] = "Condition: " . ($condition ? "New" : "Used");
                             }
+                            if (!empty($minprice)) {
+                                $conditionsDisplay[] = "Min Price: {$minprice}";
+                            }
+                            if (!empty($maxprice)) {
+                                $conditionsDisplay[] = "Max Price: {$maxprice}";
+                            }
 
                             $conditionsString = implode(', ', $conditionsDisplay);
                             if($conditionsString == ""){
@@ -159,7 +184,7 @@
 
                     } else if (isset($_GET['search-btn'])) {
                         if (isset($_GET['search-value']) && !empty(trim($_GET['search-value']))) {
-                            $all_books = $crudObj->search('book', [], ['title' => "%{$_GET['search-value']}%"], '')->fetchAll();
+                            $all_books = $crudObj->search('book', [], ['title' => $_GET['search-value'], 'published_year'=> $_GET['search-value']], '')->fetchAll();
                             if (count($all_books) == 0) {
                                 echo "<h2 class='text-center mb-5' style='color:darkolivegreen;'>0 results with searched data!</h2>";
                             } else {
@@ -179,7 +204,7 @@
                     if ($all_books):
                         foreach ($all_books as $a_book):
                     ?>
-                        <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+                        <div class="col-lg-4 col-md-4 col-sm-6 mb-3">
                             <a href="book_details.php?book_id=<?= $a_book['id']; ?>" class="text-decoration-none">
                                 <div class="card" style="height: 500px;">
                                     <img src="./assets/images/books/<?= $a_book['image']; ?>" class="card-img-top" alt="..." height="300px">
