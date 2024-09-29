@@ -106,6 +106,32 @@ spl_autoload_register(function ($class_name) {
 
 ?>
 
+<!-- Modify acc -->
+ <?php
+    if(isset($_POST['modify-btn'])){
+        $modify_firstname = $_POST['modify-firstname'];
+        $modify_lastname = $_POST['modify-lastname'];
+        $modify_email = $_POST['modify-email'];
+
+        if(!empty($modify_firstname) && !empty($modify_lastname) && !empty($modify_email)){
+            $modify_acc = (new Crud($pdo))->update('person',['name','surname','email'], [$modify_firstname, $modify_lastname, $modify_email],['id'=>$_SESSION['user_id']]);
+
+            if($modify_acc){
+                $_SESSION['success_message'] = '<h4 class="alert alert-info text-center mx-auto mt-2 w-75">Your account information has been updated successfully.!</h4>';
+                header('Location:index.php');
+            }else{
+                $errors[] = 'Something went wrong while updating account informations!';
+            }
+
+        } else {
+            $errors[] = 'Fill input fields to update account information!';
+        }
+    }
+ 
+ 
+ 
+ ?>
+
 
 
 <!DOCTYPE html>
@@ -224,27 +250,32 @@ spl_autoload_register(function ($class_name) {
                         </form>
                     </div>
                     <?php endif; ?>
-                    <?php if(isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true): ?>
+                    <?php if(isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true): 
+                        $logged_user = (new Crud($pdo))->select('person',[],['id'=> $_SESSION['user_id']],1,'')->fetch();    
+                        
+                    ?>
                     <div class="dropdown mx-2 w-50">
                         <button type="button" class="btn btn-success dropdown-toggle w-100" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside"> Modify Account    </button>
                         <form class="dropdown-menu p-4 mt-2" style="width:250px;"  method="post" action="<?= $_SERVER['PHP_SELF']; ?>">
+                            <input type="hidden" id="userid" value="<?= $logged_user['id'] ?>">
                             <div class="mb-3">
                             <label for="modify-firstname" class="form-label">First Name</label>
-                            <input type="text" name="modify-firstname" class="form-control" id="modifyname" value="">
+                            <input type="text" name="modify-firstname" class="form-control" id="modifyname" required value="<?= $logged_user['name'] ?>">
                             </div>
                             <div class="mb-3">
                             <label for="modify-lastname" class="form-label">Last Name</label>
-                            <input type="text" name="modify-lastname" class="form-control" id="modifylastname" value="">
+                            <input type="text" name="modify-lastname" class="form-control" id="modifylastname" required value="<?= $logged_user['surname'] ?>">
                             </div>
                             <div class="mb-3">
                             <label for="modify-email" class="form-label">Email address</label>
-                            <input type="email" name="modify-email" class="form-control" id="modifyemail" value="">
+                            <input type="email" name="modify-email" class="form-control" id="modifyemail" required value="<?= $logged_user['email'] ?>">
                             </div>
-                            <div class="mb-3">
+                            <!-- <div class="mb-3">
                             <label for="modify-password" class="form-label">Password</label>
-                            <input type="password" name="modify-password" class="form-control" id="modifypassword" value="">
-                            </div>
+                            <input type="password" name="modify-password" class="form-control" id="modifypassword" value="<?= $logged_user['password'] ?>">
+                            </div> -->
                             <button type="submit" name="modify-btn" class="btn btn-primary">Modify</button>
+                            <button type="submit" name="delete-btn" class="btn btn-danger">Delete</button>
                         </form>
                     </div>
                     <div>
