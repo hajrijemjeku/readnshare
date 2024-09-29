@@ -2,11 +2,18 @@
 include 'db.php';
 ob_start();
 //error_reporting(E_ALL);
-$errors = [];
-    
-    spl_autoload_register(function ($class_name) {
-        include $class_name . '.php';
-    });
+$errors = [];    
+
+//show a message if user registered successfully!
+if (isset($_SESSION['success_message'])) {
+    echo $_SESSION['success_message'];
+    unset($_SESSION['success_message']);
+}
+
+
+spl_autoload_register(function ($class_name) {
+    include $class_name . '.php';
+});
     
 
 ?>
@@ -30,7 +37,9 @@ $errors = [];
                             $sigunp = (new Crud($pdo))->insert('person',['name','surname','email','password'], [$firstname, $lastname, $email, $password]);
     
                             if($sigunp){
+                                $_SESSION['success_message'] = '<h3 class="alert alert-info text-center"> You registered successfully! Please sign in to access our services. </h3>';
                                 header('Location:index.php');
+                                
                             }else{
                                 $errors[] = "Something went wrong while inserting";
                             }
@@ -52,6 +61,51 @@ $errors = [];
         }
     }
 ?>
+<!-- SIGN IN -->
+<?php
+            if(isset($_POST['signin-btn'])){
+                $email = $_POST['email'];
+                $password = $_POST['password'];
+
+
+                if(!empty($email) && !empty($password)){
+                    if(filter_var($email, FILTER_VALIDATE_EMAIL)){
+                        $checkacc = (new Crud($pdo))->select('person',[],['email'=> $email],1,'')->fetch();
+                        if($email == $checkacc['email']){
+                            $password = password_verify( $password, $checkacc   ['password']);
+                            if($password){
+                                $_SESSION['logged_in'] = true;
+                                $_SESSION['email'] = $email;
+                                $_SESSION['user_id'] = $checkacc['id'];
+                                $_SESSION['is_admin'] = $checkacc['isadmin'];
+                                header('Location: index.php');
+                            }else{
+                                $errors[] = 'Wrong password';}
+                        } else{
+                            $errors[] = 'Email not found on our database';}
+
+                    }else{
+                        $errors[] =  "Please enter a valid email";}
+                } else {
+                    $errors[] =  "Please fill email and password fields";}
+            }
+        
+        ?>
+
+<!-- Log Out -->
+ <?php
+    if(isset($_GET['logout-btn'])){
+        session_unset();
+        session_destroy();
+        unset($_SESSION['logged_in']);
+        unset($_SESSION['user_id']);
+        unset($_SESSION['email']);
+        unset($_SESSION['is_admin']);
+        header('Location:index.php');
+    }
+
+?>
+
 
 
 <!DOCTYPE html>
@@ -120,18 +174,19 @@ $errors = [];
                     </form>
                     <?php endif; ?>
                     <div class="d-flex justify-content-center">
+                    <?php if(!(isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true)): ?>
                     <div class="dropdown mx-2 w-50">
                         <button type="button" class="btn btn-success dropdown-toggle w-100" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
                             Sign In
                         </button>
-                        <form class="dropdown-menu p-4 mt-2" method="post" action="signin.php" style="width:250px;">
+                        <form class="dropdown-menu p-4 mt-2" method="post" action="<?= $_SERVER['PHP_SELF']; ?>" style="width:250px;">
                             <div class="mb-3">
                             <label for="exampleDropdownFormEmail" class="form-label">Email address</label>
-                            <input type="email" class="form-control" id="exampleDropdownFormEmail" placeholder="email@example.com">
+                            <input type="email" name="email" class="form-control" id="exampleDropdownFormEmail" placeholder="email@example.com">
                             </div>
                             <div class="mb-3">
                             <label for="exampleDropdownFormPassword" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="exampleDropdownFormPassword" placeholder="Password">
+                            <input type="password" name="password" class="form-control" id="exampleDropdownFormPassword" placeholder="Password">
                             </div>
                             <div class="mb-3">
                             <div class="form-check">
@@ -141,7 +196,7 @@ $errors = [];
                                 </label>
                             </div>
                             </div>
-                            <button type="submit" class="btn btn-primary">Sign in</button>
+                            <button type="submit" name="signin-btn" class="btn btn-primary">Sign in</button>
                         </form>
                     </div>
                     <div class="dropdown mx-2 w-50">
@@ -168,6 +223,38 @@ $errors = [];
                             <button type="submit" name="signup-btn" class="btn btn-primary">Sign Up</button>
                         </form>
                     </div>
+                    <?php endif; ?>
+                    <?php if(isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true): ?>
+                    <div class="dropdown mx-2 w-50">
+                        <button type="button" class="btn btn-success dropdown-toggle w-100" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside"> Modify Account    </button>
+                        <form class="dropdown-menu p-4 mt-2" style="width:250px;"  method="post" action="<?= $_SERVER['PHP_SELF']; ?>">
+                            <div class="mb-3">
+                            <label for="modify-firstname" class="form-label">First Name</label>
+                            <input type="text" name="modify-firstname" class="form-control" id="modifyname" value="">
+                            </div>
+                            <div class="mb-3">
+                            <label for="modify-lastname" class="form-label">Last Name</label>
+                            <input type="text" name="modify-lastname" class="form-control" id="modifylastname" value="">
+                            </div>
+                            <div class="mb-3">
+                            <label for="modify-email" class="form-label">Email address</label>
+                            <input type="email" name="modify-email" class="form-control" id="modifyemail" value="">
+                            </div>
+                            <div class="mb-3">
+                            <label for="modify-password" class="form-label">Password</label>
+                            <input type="password" name="modify-password" class="form-control" id="modifypassword" value="">
+                            </div>
+                            <button type="submit" name="modify-btn" class="btn btn-primary">Modify</button>
+                        </form>
+                    </div>
+                    <div>
+                        <form action="<?= $_SERVER['PHP_SELF']; ?>" method="get">
+                            <button type="submit" name="logout-btn" class="btn btn-success w-100">Log Out</button>
+                        </form>
+
+                    </div>
+
+                    <?php endif; ?>
 
 
                     </div>
