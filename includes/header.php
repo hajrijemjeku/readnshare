@@ -2,6 +2,7 @@
 include 'db.php';
 ob_start();
 //error_reporting(E_ALL);
+$errors = [];
     
     spl_autoload_register(function ($class_name) {
         include $class_name . '.php';
@@ -9,6 +10,49 @@ ob_start();
     
 
 ?>
+
+<!-- SIGN UP -->
+<?php
+    if(isset($_POST['signup-btn'])){
+        $firstname = $_POST['firstname'];
+        $lastname = $_POST['lastname'];
+        $email = $_POST['email'];
+        $password = $_POST['password'];
+
+
+        if(!empty($firstname) && !empty($lastname)){
+            if(!empty($email) && !empty($password)){
+                if(filter_var($email, FILTER_VALIDATE_EMAIL)){
+                    $getemail = (new Crud($pdo))->select('person',[],['email'=> $email],'','')->fetch();
+                    if(!($email == $getemail['email'])){
+                        $password = password_hash($password, PASSWORD_BCRYPT);
+                        if($password){
+                            $sigunp = (new Crud($pdo))->insert('person',['name','surname','email','password'], [$firstname, $lastname, $email, $password]);
+    
+                            if($sigunp){
+                                header('Location:index.php');
+                            }else{
+                                $errors[] = "Something went wrong while inserting";
+                            }
+                        } else {
+                            $errors[] =  "Password not encrypted";
+                        }
+                    }else {
+                        $errors[] = "Email already registered. Please signIn!";
+                    }
+                    
+                }else{
+                    $errors[] =  "Please enter a valid email";
+                }
+            } else {
+                $errors[] =  "Please fill email and password fields";
+            }
+        }else{
+            $errors[] =  "Fill firstname and lastname fields";
+        }
+    }
+?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -71,7 +115,7 @@ ob_start();
                 <div class="d-flex flex-column w-25" style="margin-right:80px;">
                     <?php if(basename($_SERVER['SCRIPT_FILENAME']) == "books.php"): ?>
                     <form class="d-flex my-2" name="search-form"  method="get" action="<?= $_SERVER['REQUEST_URI']; ?>">
-                        <input class="form-control me-2" type="search" name="search-value" placeholder="Search" aria-label="Search">
+                        <input class="form-control me-2" type="search" name="search-value" placeholder="Search by title or published year" aria-label="Search">
                         <button class="btn btn-outline-success" name="search-btn" type="submit">Search</button>
                     </form>
                     <?php endif; ?>
@@ -80,7 +124,7 @@ ob_start();
                         <button type="button" class="btn btn-success dropdown-toggle w-100" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
                             Sign In
                         </button>
-                        <form class="dropdown-menu p-4 mt-2" style="width:250px;">
+                        <form class="dropdown-menu p-4 mt-2" method="post" action="signin.php" style="width:250px;">
                             <div class="mb-3">
                             <label for="exampleDropdownFormEmail" class="form-label">Email address</label>
                             <input type="email" class="form-control" id="exampleDropdownFormEmail" placeholder="email@example.com">
@@ -104,24 +148,24 @@ ob_start();
                         <button type="button" class="btn btn-success dropdown-toggle w-100" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
                             Sign Up
                         </button>
-                        <form class="dropdown-menu p-4 mt-2" style="width:250px;">
+                        <form class="dropdown-menu p-4 mt-2" style="width:250px;"  method="post" action="<?= $_SERVER['PHP_SELF']; ?>">
                             <div class="mb-3">
                             <label for="exampleDropdownFormName2" class="form-label">First Name</label>
-                            <input type="text" class="form-control" id="exampleDropdownFormName2" placeholder="John">
+                            <input type="text" name="firstname" class="form-control" id="exampleDropdownFormName2" placeholder="John">
                             </div>
                             <div class="mb-3">
                             <label for="exampleDropdownFormLastName2" class="form-label">Last Name</label>
-                            <input type="text" class="form-control" id="exampleDropdownFormLastName2" placeholder="Doe">
+                            <input type="text" name="lastname" class="form-control" id="exampleDropdownFormLastName2" placeholder="Doe">
                             </div>
                             <div class="mb-3">
                             <label for="exampleDropdownFormEmail2" class="form-label">Email address</label>
-                            <input type="email" class="form-control" id="exampleDropdownFormEmail2" placeholder="email@example.com">
+                            <input type="email" name="email" class="form-control" id="exampleDropdownFormEmail2" placeholder="email@example.com">
                             </div>
                             <div class="mb-3">
                             <label for="exampleDropdownFormPassword2" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="exampleDropdownFormPassword2" placeholder="Password">
+                            <input type="password" name="password" class="form-control" id="exampleDropdownFormPassword2" placeholder="Password">
                             </div>
-                            <button type="submit" class="btn btn-primary">Sign Up</button>
+                            <button type="submit" name="signup-btn" class="btn btn-primary">Sign Up</button>
                         </form>
                     </div>
 
@@ -135,4 +179,13 @@ ob_start();
             </div>
         </nav>
     </header>
+    <?php if(count($errors) > 0): ?>
+    <div class="alert alert-warning w-50 d-flex justify-content-center align-content-center mt-2 mx-auto">
+        
+            <?php foreach($errors as $error): ?>
+            <p class="p-0 m-0"><?= $error; ?></p>
+            <?php endforeach; ?> 
+
+    </div>
+    <?php endif; ?>
     
