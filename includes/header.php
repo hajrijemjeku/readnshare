@@ -4,12 +4,11 @@ ob_start();
 //error_reporting(E_ALL);
 $errors = [];    
 
-//show a message if user registered successfully!
+//show a message if user registered successfully or modified info acc or ...!
 if (isset($_SESSION['success_message'])) {
     echo $_SESSION['success_message'];
     unset($_SESSION['success_message']);
 }
-
 
 spl_autoload_register(function ($class_name) {
     include $class_name . '.php';
@@ -71,18 +70,23 @@ spl_autoload_register(function ($class_name) {
                 if(!empty($email) && !empty($password)){
                     if(filter_var($email, FILTER_VALIDATE_EMAIL)){
                         $checkacc = (new Crud($pdo))->select('person',[],['email'=> $email],1,'')->fetch();
-                        if($email == $checkacc['email']){
-                            $password = password_verify( $password, $checkacc   ['password']);
-                            if($password){
-                                $_SESSION['logged_in'] = true;
-                                $_SESSION['email'] = $email;
-                                $_SESSION['user_id'] = $checkacc['id'];
-                                $_SESSION['is_admin'] = $checkacc['isadmin'];
-                                header('Location: index.php');
-                            }else{
-                                $errors[] = 'Wrong password';}
-                        } else{
-                            $errors[] = 'Email not found on our database';}
+                        if($checkacc){
+                            if($email == $checkacc['email']){
+                                $password = password_verify( $password, $checkacc   ['password']);
+                                if($password){
+                                    $_SESSION['logged_in'] = true;
+                                    $_SESSION['email'] = $email;
+                                    $_SESSION['user_id'] = $checkacc['id'];
+                                    $_SESSION['is_admin'] = $checkacc['isadmin'];
+                                    header('Location: index.php');
+                                }else{
+                                    $errors[] = 'Wrong password';}
+                            } else{
+                                $errors[] = 'Email not found on our database';}
+                        }else{
+                            $errors[] = 'Email not found on our database';
+                        }
+                        
 
                     }else{
                         $errors[] =  "Please enter a valid email";}
@@ -132,7 +136,27 @@ spl_autoload_register(function ($class_name) {
  
  ?>
 
-
+<!-- Delete acc -->
+<?php
+        if(isset($_POST['deleteacc'])){
+            if(isset($_POST['delacc-password']) && !empty($_POST['delacc-password'])){
+                $input_password = $_POST['delacc-password'];
+                $activeuser = (new Crud($pdo))->select('person',[],['id'=>$_SESSION['user_id']],1,'')->fetch();
+                if(password_verify($input_password, $activeuser['password'])){
+                    $deleteuser = (new Crud($pdo))->delete('person','id', $_SESSION['user_id']);
+                    session_unset();                   
+                    session_destroy();
+                    unset($_SESSION['user_id']);
+                    unset($_SESSION['logged_in']);
+                    unset($_SESSION['is_admin']);
+                    header('Location:index.php');
+                }else{
+                    $errors[] = 'Wrong password';
+                }
+            }
+        }
+ 
+ ?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -275,9 +299,42 @@ spl_autoload_register(function ($class_name) {
                             <input type="password" name="modify-password" class="form-control" id="modifypassword" value="<?= $logged_user['password'] ?>">
                             </div> -->
                             <button type="submit" name="modify-btn" class="btn btn-primary">Modify</button>
-                            <button type="submit" name="delete-btn" class="btn btn-danger">Delete</button>
-                        </form>
+                            <button type="button" name="delete-btn" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteUserModal<?= $logged_user['id'] ?>">Delete</button>
+                            </form>
+                                  <!-- Delete Modal -->
+                    <div class="modal fade" id="deleteUserModal<?= $logged_user['id'] ?>" tabindex="-1" role="dialog" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" >Confirm with password u wanna delete your <strong>'<?= $logged_user['name'] . '  '.$logged_user['surname'];?>' </strong> account </h5>
+                                    <button type="submit" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <form id="deleteForm" action="<?= $_SERVER['PHP_SELF'] ?>" method="POST">
+                                    <div class="modal-body">
+                                        <div class="form-group">
+                                            <label for="password">Password:</label>
+                                            <input type="password" name="delacc-password" id="delacc-password" required >
+                                        </div>
+                                        <input type="hidden" name="user-id" id="user-id" value="<?= $logged_user['id'] ?>">
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button name="deleteacc" type="submit" class="btn btn-primary">Delete Account</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
+                        
+                   
+                        
+                    </div>
+
+
+
+                    
                     <div>
                         <form action="<?= $_SERVER['PHP_SELF']; ?>" method="get">
                             <button type="submit" name="logout-btn" class="btn btn-success w-100">Log Out</button>
@@ -294,7 +351,9 @@ spl_autoload_register(function ($class_name) {
                 </div>
                 
                 </div>
+                
             </div>
+            
         </nav>
     </header>
     <?php if(count($errors) > 0): ?>
