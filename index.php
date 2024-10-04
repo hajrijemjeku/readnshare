@@ -1,5 +1,12 @@
 <?php include('includes/header.php'); ?>
+<?php
+$errors = [];   
+if (isset($_SESSION['success_message'])) {
+    echo $_SESSION['success_message'];
+    unset($_SESSION['success_message']);
+}
 
+?>
 
 
 <section class="slider" style="position:relative;">
@@ -187,13 +194,14 @@
         </div>
     </div>
 
+
     <div class="row mt-4">
     <h2 class="text-center mb-5" style="font-family: Arial, sans-serif; font-weight: bold; color: #7b9b77;">Subscribe</h2>
     <div class="col-md-8 col-lg-6 mx-auto text-center">
-        <form action="" method="POST">
+        <form action="<?= $_SERVER['PHP_SELF']; ?>" method="POST">
             <div class="input-group mb-3">
-                <input type="email" class="form-control" placeholder="Enter your email" aria-label="Email" required>
-                <button class="btn btn-success" type="submit">Subscribe</button>
+                <input type="email" name="email-subscribe" class="form-control" placeholder="Enter your email" aria-label="Email" required>
+                <button class="btn btn-success" name="subscribe-btn" type="submit">Subscribe</button>
             </div>
         </form>
         <p class="mt-3">Stay updated with the latest books and offers!</p>
@@ -211,7 +219,56 @@
 </section>
 
 
+<!-- Subscribe code -->
+<?php
+    if(isset($_POST['subscribe-btn'])){
+        $email = $_POST['email-subscribe'];
 
+        if(!empty($email)){
+            if(filter_var($email,FILTER_VALIDATE_EMAIL)){
+                $checkemail = (new Crud($pdo))->select('subscribers',[],['email'=>$email],1,'');
+                $checkemail = $checkemail ? $checkemail->fetch() : null;
+                // echo "<pre>";
+                // var_dump($checkemail); 
+                // echo "</pre>";
+
+                if ($checkemail && isset($checkemail['email']) && $checkemail['email'] === $email) {
+                    $errors[] =  "This email '$email' already subscribed!";
+                }else{
+                    $subscribeemail = (new Crud($pdo))->insert('subscribers',['email'],[$email]);
+                    if($subscribeemail){
+                        $_SESSION['success_message'] = '<h3 class="alert alert-info text-center"> You subscribed successfully! </h3>';
+                        header('Location:index.php');
+                    }else{
+                        $errors[] = 'Something went wrong! Please try again to subscribe!';
+                    }
+                  
+                    
+                    
+                }
+            }else{
+                $errors[] = 'Invalid Email';
+            }
+        }else{
+            $errors[] = 'Empty field';
+        }
+
+    }
+    
+
+?>
+
+<div class="row mt-4">
+        <?php if(count($errors) > 0): ?>
+    <div class="alert alert-warning w-50 d-flex justify-content-center align-content-center mt-2 mx-auto">
+        
+            <?php foreach($errors as $error): ?>
+            <p class="p-0 m-0"><?= $error; ?></p>
+            <?php endforeach; ?> 
+
+    </div>
+    <?php endif; ?>
+        </div>
 
 
 <?php include('includes/footer.php'); ?>
