@@ -6,6 +6,41 @@ if (isset($_SESSION['success_message'])) {
     unset($_SESSION['success_message']);
 }
 
+if(isset($_POST['add-to-cart'])){
+    
+    $book_id = $_POST['book_id'];
+    $book_title = $_POST['book_title'];
+    $book_price = $_POST['book_price'];
+    $book_qty = $_POST['book_stock'];
+
+
+    if(isset($_SESSION['cart'])){
+        if(array_key_exists($book_id, $_SESSION['cart'])){
+            
+            $_SESSION['cart'][$book_id]['stock'] += $book_qty;
+            
+        }else{
+            $_SESSION['cart'][$book_id] = [
+                'id' => $book_id,
+                'title' => $book_title,
+                'price' => $book_price,
+                'stock' => $book_qty
+            ];
+        }
+    }else{
+        $_SESSION['cart'] = [];
+        $_SESSION['cart'][$book_id] = [
+            'id' => $book_id,
+            'title' => $book_title,
+            'price' => $book_price,
+            'stock' => $book_qty
+        ];
+
+    }
+    header('Location:my-items.php');
+
+}
+
 ?>
 
 
@@ -41,15 +76,17 @@ if (isset($_SESSION['success_message'])) {
 <section class="index py-5">
 <div class="container mt-4">
 <h2 class="text-center mb-3" style="font-family: Arial, sans-serif; font-weight: bold; color: #7b9b77;">Our Latest Books</h2>
-<div class="row">
+    <div class="row">
 
             <div class="row mt-4">
                 <?php
                 $crudObj = new Crud($pdo);
                 $allbooks = $crudObj->select('book', [], [], 4, '');
+               
                 if ($allbooks) {
                     $allbooks = $allbooks->fetchAll();
                     foreach ($allbooks as $book):
+                        $stock = $crudObj->select('book',['stock'],['id'=>$book['id']],'','')->fetch();
                 ?>
                 <div class="col-md-6 col-lg-12 mb-4">
                     <div class="list-group">
@@ -68,9 +105,14 @@ if (isset($_SESSION['success_message'])) {
                                 <input type="hidden" name="book_id" value="<?= $book['id']; ?>">
                                 <input type="hidden" name="book_title" value="<?= $book['title']; ?>">
                                 <input type="hidden" name="book_price" value="<?= $book['price']; ?>">
-                                <input type="hidden" name="book_stock" value="<?= $book['stock']; ?>">
-                                <input type="number" name="stock" value="1" min="1" class="form-control me-2" style="width: 60px;">
+                                <!-- <input type="hidden" name="book_stock" value="<?= $book['stock']; ?>"> -->
+                                 <?php if($book['stock'] > 0): ?>
+                                <input type="number" name="book_stock" value="1" min="1" max="<?= $stock['stock'];?>" class="form-control me-2" style="width: 60px;">
                                 <button name="add-to-cart" type="submit" class="btn btn-success">Add to Cart</button>
+                                <?php endif; if($book['stock'] == 0):?>
+                                    <h5 class="mb-1" style="color:red;">Out of Stock!</h5>
+                                    <?php endif; ?>
+
                             </form>
                         </div>
                     </div>
@@ -196,17 +238,17 @@ if (isset($_SESSION['success_message'])) {
 
 
     <div class="row mt-4">
-    <h2 class="text-center mb-5" style="font-family: Arial, sans-serif; font-weight: bold; color: #7b9b77;">Subscribe</h2>
-    <div class="col-md-8 col-lg-6 mx-auto text-center">
-        <form action="<?= $_SERVER['PHP_SELF']; ?>" method="POST">
-            <div class="input-group mb-3">
-                <input type="email" name="email-subscribe" class="form-control" placeholder="Enter your email" aria-label="Email" required>
-                <button class="btn btn-success" name="subscribe-btn" type="submit">Subscribe</button>
-            </div>
-        </form>
-        <p class="mt-3">Stay updated with the latest books and offers!</p>
+        <h2 class="text-center mb-5" style="font-family: Arial, sans-serif; font-weight: bold; color: #7b9b77;">Subscribe</h2>
+        <div class="col-md-8 col-lg-6 mx-auto text-center">
+            <form action="<?= $_SERVER['PHP_SELF']; ?>" method="POST">
+                <div class="input-group mb-3">
+                    <input type="email" name="email-subscribe" class="form-control" placeholder="Enter your email" aria-label="Email" required>
+                    <button class="btn btn-success" name="subscribe-btn" type="submit">Subscribe</button>
+                </div>
+            </form>
+            <p class="mt-3">Stay updated with the latest books and offers!</p>
+        </div>
     </div>
-</div>
 
 
 
