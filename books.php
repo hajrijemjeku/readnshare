@@ -14,7 +14,6 @@
                     <h4>Filter by:</h4>
                     <div class="filter-section mt-3">
                         <form action="<?= $_SERVER['PHP_SELF'] ?>" method="get">
-
                         
                         <h5>Price Range</h5>
                         <div class="form-number">
@@ -88,8 +87,11 @@
                             <option value="<?= $category['id'] ?>"><?= $category['name'] ?></option>
                             <?php endforeach; ?>
                         </select>
+                        <div class="row p-0">
+                            <button class="btn btn-success w-50 mb-3" style="margin-left:-1px;" name="apply-filter" type="submit">Apply Filters</button>
+                            <button type="submit" class="btn btn-primary w-50 mb-3" style="margin-left:1px;" name="with-reviews-btn">Books With Reviews</button>
+                        </div>
 
-                        <button class="btn btn-primary w-100" name="apply-filter" type="submit">Apply Filters</button>
                         </form>
                     </div>
                 </div>
@@ -100,8 +102,17 @@
                 <div class="row">
                     <?php
                     $crudObj = new Crud($pdo);
-
-                        //FILTER SECTION CODE
+                    if (isset($_GET['with-reviews-btn'])) {
+                        $filterConditions = [];
+                        $reviews = (new Crud($pdo))->distinctSelect('review', 'bookid')->fetchAll();
+                        // var_dump($reviews); 
+                        if ($reviews) {
+                            $filterConditions['id'] = $reviews;
+                        }
+                    }
+                    
+            
+                    //FILTER SECTION CODE
                     if(isset($_GET['apply-filter'])){
                         $language = $_GET['language'] ?? null;
                         $author = $_GET['author'] ?? null;
@@ -138,7 +149,7 @@
                         }
                         
         
-                        $all_books = $crudObj->select('book', [], $filterConditions, '', '');
+                        $all_books = $crudObj->search('book', [], $filterConditions, '');
                         $all_books = $all_books->fetchAll();
 
                         if (count($all_books) == 0) {
@@ -194,6 +205,14 @@
                             echo "<h2 class='text-center mb-5' style='color:darkolivegreen;'>It looks like you didn’t enter anything. Please type a title or author to search for books.</h2>";
                             exit;
                         }
+                    } else if(isset($_GET['with-reviews-btn'])){
+                        $all_books = $crudObj->select('book', [], $filterConditions, '','');
+                        $all_books = $all_books->fetchAll();
+                        if (count($all_books) == 0) {
+                            echo "<h2 class='text-center mb-5' style='color:darkolivegreen;'>0 books with reviews!</h2>";
+                        } else {
+                            echo "<h2 class='text-center mb-5' style='color:darkolivegreen;'>Books with reviews!</h2>";
+                        }
                     } else {
                         $all_books = $crudObj->select('book', [], [], '', '')->fetchAll();
                         if (count($all_books) > 0) {
@@ -218,7 +237,7 @@
                                             <form action="<?= $_SERVER['PHP_SELF']; ?>" method="POST" class="d-inline" style="margin-left: 140px;">
                                                 <input type="hidden" name="book_id" id="book_id" value="<?= $a_book['id'] ?>">
                                                 <input type="hidden" name="title" value="<?= $a_book['title'] ?>">
-                                                <input type="hidden" name="size" value="<?= $a_book['size'] ?>">
+                                                <input type="hidden" name="size" value="<?= $a_book['genreid'] ?>">
                                                 <input type="hidden" name="price" value="<?= $a_book['price'] ?>">
                                                 <input type="hidden" name="stock" value="<?= $a_book['stock'] ?>">
 
