@@ -98,12 +98,13 @@ spl_autoload_register(function ($class_name) {
 
 <!-- Log Out -->
  <?php
-    if(isset($_GET['logout-btn'])){
+    if(isset($_POST['logout-btn'])){
         session_unset();
         session_destroy();
         unset($_SESSION['logged_in']);
         unset($_SESSION['user_id']);
         unset($_SESSION['email']);
+        unset($_SESSION['cart']);
         unset($_SESSION['is_admin']);
         header('Location:index.php');
     }
@@ -157,6 +158,10 @@ spl_autoload_register(function ($class_name) {
         }
  
  ?>
+
+
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -214,10 +219,18 @@ spl_autoload_register(function ($class_name) {
                             <?php endforeach; ?>
                         </ul>
                     </li>
+                    <li class="nav-item mx-4" style="width:150px;">
+                        <a class="nav-link " aria-current="page" href="apibooks.php">Soon to Arrive</a>
+                    </li>
+                    <?php if((isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true)): ?>
+                        <li class="nav-item mx-4" style="width:150px;">
+                            <a class="nav-link " aria-current="page" href="my-items.php">My Items</a>
+                        </li>
+                    <?php endif; ?>
                     
                 </ul>
-                <div class="d-flex flex-column w-25" style="margin-right:80px;">
-                    <?php if(basename($_SERVER['SCRIPT_FILENAME']) == "books.php"): ?>
+                <div class="d-flex flex-row-reverse w-50" style="margin-right:80px;">
+                    <?php if(basename($_SERVER['SCRIPT_FILENAME']) == "books.php" || basename($_SERVER['SCRIPT_FILENAME']) == "apibooks.php" ): ?>
                     <form class="d-flex my-2" name="search-form"  method="get" action="<?= $_SERVER['REQUEST_URI']; ?>">
                         <input class="form-control me-2" type="search" name="search-value" placeholder="Search by title or published year" aria-label="Search">
                         <button class="btn btn-outline-success" name="search-btn" type="submit">Search</button>
@@ -225,6 +238,8 @@ spl_autoload_register(function ($class_name) {
                     <?php endif; ?>
                     <div class="d-flex justify-content-center">
                     <?php if(!(isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true)): ?>
+                    <?php if(basename($_SERVER['SCRIPT_FILENAME']) !== "books.php"): ?>
+
                     <div class="dropdown mx-2 w-50">
                         <button type="button" class="btn btn-success dropdown-toggle w-100" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
                             Sign In
@@ -273,76 +288,105 @@ spl_autoload_register(function ($class_name) {
                             <button type="submit" name="signup-btn" class="btn btn-primary">Sign Up</button>
                         </form>
                     </div>
-                    <?php endif; ?>
+                    <?php endif; endif;?>
                     <?php if(isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true): 
                         $logged_user = (new Crud($pdo))->select('person',[],['id'=> $_SESSION['user_id']],1,'')->fetch();    
                         
                     ?>
-                    <div class="dropdown mx-2 w-50">
-                        <button type="button" class="btn btn-success dropdown-toggle w-100" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside"> Modify Account    </button>
+                    <?php if(isset($_SESSION['is_admin']) && $_SESSION['is_admin'] === 1): ?>
+                    <div class="collapse navbar-collapse">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            <li class="nav-item dropdown mx-4">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Dashboard
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="books.php">Manage Books</a></li>
+                                    <li><a class="dropdown-item" href="books.php">Manage Orders</a></li>
+                                    <li><a class="dropdown-item" href="books.php">Manage Users  </a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <?php endif; ?>
+                    <?php if(basename($_SERVER['SCRIPT_FILENAME']) == "index.php" || basename($_SERVER['SCRIPT_FILENAME']) == "my-items.php" || basename($_SERVER['SCRIPT_FILENAME']) == "book_details.php" || basename($_SERVER['SCRIPT_FILENAME']) == "addbook.php"): ?>
+
+                    <div class="dropdown mx-2 collapse navbar-collapse">
+                        <button type="button" class="btn btn-success dropdown-toggle w-100" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside"> Modify Account </button>
                         <form class="dropdown-menu p-4 mt-2" style="width:250px;"  method="post" action="<?= $_SERVER['PHP_SELF']; ?>">
                             <input type="hidden" id="userid" value="<?= $logged_user['id'] ?>">
                             <div class="mb-3">
-                            <label for="modify-firstname" class="form-label">First Name</label>
-                            <input type="text" name="modify-firstname" class="form-control" id="modifyname" required value="<?= $logged_user['name'] ?>">
+                                <label for="modify-firstname" class="form-label">First Name</label>
+                                <input type="text" name="modify-firstname" class="form-control" id="modifyname" required value="<?= $logged_user['name'] ?>">
                             </div>
                             <div class="mb-3">
-                            <label for="modify-lastname" class="form-label">Last Name</label>
-                            <input type="text" name="modify-lastname" class="form-control" id="modifylastname" required value="<?= $logged_user['surname'] ?>">
+                                <label for="modify-lastname" class="form-label">Last Name</label>
+                                <input type="text" name="modify-lastname" class="form-control" id="modifylastname" required value="<?= $logged_user['surname'] ?>">
                             </div>
                             <div class="mb-3">
-                            <label for="modify-email" class="form-label">Email address</label>
-                            <input type="email" name="modify-email" class="form-control" id="modifyemail" required value="<?= $logged_user['email'] ?>">
+                                <label for="modify-email" class="form-label">Email address</label>
+                                <input type="email" name="modify-email" class="form-control" id="modifyemail" required value="<?= $logged_user['email'] ?>">
                             </div>
-                            <!-- <div class="mb-3">
-                            <label for="modify-password" class="form-label">Password</label>
-                            <input type="password" name="modify-password" class="form-control" id="modifypassword" value="<?= $logged_user['password'] ?>">
-                            </div> -->
-                            <button type="submit" name="modify-btn" class="btn btn-primary">Modify</button>
-                            <button type="button" name="delete-btn" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteUserModal<?= $logged_user['id'] ?>">Delete</button>
-                            </form>
-                                  <!-- Delete Modal -->
-                    <div class="modal fade" id="deleteUserModal<?= $logged_user['id'] ?>" tabindex="-1" role="dialog" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" >Confirm with password u wanna delete your <strong>'<?= $logged_user['name'] . '  '.$logged_user['surname'];?>' </strong> account </h5>
-                                    <button type="submit" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <form id="deleteForm" action="<?= $_SERVER['PHP_SELF'] ?>" method="POST">
-                                    <div class="modal-body">
-                                        <div class="form-group">
-                                            <label for="password">Password:</label>
-                                            <input type="password" name="delacc-password" id="delacc-password" required >
+                            <div class="mb-3 d-inline w-100">
+                            <?php if(isset($_SESSION['is_admin']) && $_SESSION['is_admin'] === 1): ?>
+                                <button type="submit" name="modify-btn" class="btn btn-primary w-100 d-inline p-1" style="margin-left:-2px;">Modify</button>
+                                <?php else: ?>
+                                <button type="submit" name="modify-btn" class="btn btn-primary w-50 d-inline p-1" style="margin-left:-2px;">Modify</button>
+                                <button type="button" name="delete-btn" class="btn btn-danger d-inline w-50 p-1" style="margin-right:-3px;" data-bs-toggle="modal" data-bs-target="#deleteUserModal<?= $logged_user['id'] ?>">Delete</button>
+                                <?php endif ?>
+                            </div>
+                            
+                            <button type="submit" name="logout-btn" class="btn btn-success w-100 mt-2">Log Out</button>
+
+                        </form>
+                        <!-- Delete Modal -->
+                        <div class="modal fade" id="deleteUserModal<?= $logged_user['id'] ?>" tabindex="-1" role="dialog" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" >Confirm with password u wanna delete your <strong>'<?= $logged_user['name'] . '  '.$logged_user['surname'];?>' </strong> account </h5>
+                                        <button type="submit" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <form id="deleteForm" action="<?= $_SERVER['PHP_SELF'] ?>" method="POST">
+                                        <div class="modal-body">
+                                            <div class="form-group">
+                                                <label for="password">Password:</label>
+                                                <input type="password" name="delacc-password" id="delacc-password" required >
+                                            </div>
+                                            <input type="hidden" name="user-id" id="user-id" value="<?= $logged_user['id'] ?>">
                                         </div>
-                                        <input type="hidden" name="user-id" id="user-id" value="<?= $logged_user['id'] ?>">
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        <button name="deleteacc" type="submit" class="btn btn-primary">Delete Account</button>
-                                    </div>
-                                </form>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button name="deleteacc" type="submit" class="btn btn-primary">Delete Account</button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
                         
                    
                         
                     </div>
 
+                    <?php if(isset($_SESSION['is_admin']) && $_SESSION['is_admin'] === 0): ?>
+                    <div class="collapse navbar-collapse  mx-2  ">
+                        <form action="addbook.php" method="post">
+                            <button type="submit" name="addbook" class="btn btn-success w-100">Add Book</button>
+                        </form>
 
-
+                    </div>
+                    <?php endif; ?>
                     
-                    <div>
+                    <!-- <div class="collapse navbar-collapse  mx-2  ">
                         <form action="<?= $_SERVER['PHP_SELF']; ?>" method="get">
                             <button type="submit" name="logout-btn" class="btn btn-success w-100">Log Out</button>
                         </form>
 
-                    </div>
+                    </div> -->
 
-                    <?php endif; ?>
+                    <?php endif; endif;?>
 
 
                     </div>
