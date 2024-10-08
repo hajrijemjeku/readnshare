@@ -52,14 +52,17 @@
                 <div class="p-3 border mt-3 w-50"> -->
 
                     <?php if(isset($_SESSION['logged_in']) && ($_SESSION['logged_in'] === true)): ?>
-                        <form action="<?= $_SERVER['PHP_SELF']; ?>" method="POST" class="d-inline" style="margin-left:140px;">
+                        <form action="my-items.php" method="POST">
                             <input type="hidden" name="book_id" id="book_id" value="<?= $getbook['id'] ?>">
-                            <input type="hidden" name="title" value="<?= $getbook['title'] ?>">
-                            <input type="hidden" name="categoryid"  value="<?= $getbook['categoryid'] ?>">
-                            <input type="hidden" name="price"  value="<?= $getbook['price'] ?>">
-                            <input type="hidden" name="stock"  value="<?= $getbook['stock'] ?>">
+                            <input type="hidden" name="book_title" value="<?= $getbook['title'] ?>">
+                            <input type="hidden" name="book_price"  value="<?= $getbook['price'] ?>">
+                            <?php if($getbook['stock'] > 0): ?>
+                                <input type="number" name="book_stock" value="1" min="1" max="<?= $getbook['stock'];?>" class="form-control d-inline" style="width: 60px; margin-top:10px;">
+                                <button name="add-to-cart" type="submit" class="btn btn-success mb-1">Add to Cart</button>
+                            <?php endif; if($getbook['stock'] == 0):?>
+                                <h5 class="mb-1" style="color:red;">Out of Stock!</h5>
+                            <?php endif; ?>
 
-                            <button name="add-to-cart" id="add-to-cart" class="btn-cart" type="submit">Add to cart   <i class="fa-solid fa-cart-shopping"></i></i></button>
                         </form>
                     <?php endif; ?>
 
@@ -76,9 +79,10 @@
 
 <div class="row mt-4 w-50 mx-auto">
     <div class="col-12">
-        <h3 class="text-left mb-4">Reviews</h3>
+        
         <div class="row">
-            <?php
+            <?php if(isset($_GET['book_id'])):
+            echo '<h3 class="text-left mb-4">Reviews</h3>';
             $crudObj = new Crud($pdo);
             $reviews = $crudObj->select('review', [], ['bookid' => $_GET['book_id']], '', '');
             if ($reviews) {
@@ -115,8 +119,9 @@
                     No reviews available for this book.
                 </div>
             </div>
-            <?php } ?>
+            <?php };  ?>
         </div>
+        <?php if(isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true): ?>
 
         <h4 class="mt-4">Add a Review</h4>
         <form action="<?= $_SERVER['PHP_SELF']; ?>" method="post" class="mt-3">
@@ -130,7 +135,7 @@
                 <input type="text" id="addcomment" name="addcomment" class="form-control" placeholder="Add comment" required>
             </div>
             <button type="submit" name="addreview" class="btn btn-primary">Add Review</button>
-        </form>
+        </form> <?php endif; endif;?>
     </div>
 </div>
 
