@@ -5,6 +5,41 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete') {
     unset($_SESSION['cart'][$element]);
     header('Location:my-items.php');
 }
+
+if(isset($_POST['add-to-cart'])){
+    
+    $book_id = $_POST['book_id'];
+    $book_title = $_POST['book_title'];
+    $book_price = $_POST['book_price'];
+    $book_qty = $_POST['book_stock'];
+
+
+    if(isset($_SESSION['cart'])){
+        if(array_key_exists($book_id, $_SESSION['cart'])){
+            
+            $_SESSION['cart'][$book_id]['stock'] += $book_qty;
+            
+        }else{
+            $_SESSION['cart'][$book_id] = [
+                'id' => $book_id,
+                'title' => $book_title,
+                'price' => $book_price,
+                'stock' => $book_qty
+            ];
+        }
+    }else{
+        $_SESSION['cart'] = [];
+        $_SESSION['cart'][$book_id] = [
+            'id' => $book_id,
+            'title' => $book_title,
+            'price' => $book_price,
+            'stock' => $book_qty
+        ];
+
+    }
+    header('Location:my-items.php');
+
+}
 ?>
 
 <section class="my-items py-5">
@@ -59,6 +94,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete') {
 
                 <h3 class="text-center mt-4">Checkout</h3>
                 <form action="<?= $_SERVER['PHP_SELF'] ?>" method="POST" class="row g-3 justify-content-center">
+                    <input type="hidden" name="total" value="<?= $total ?>" required>
                     <div class="col-md-3">
                         <label for="fullname" class="form-label">Fullname</label>
                         <input type="text" name="fullname" class="form-control" placeholder="Fullname" required>
@@ -87,7 +123,8 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete') {
                     $email = $_POST['email'];
                     $address = $_POST['address'];
                     $notes = $_POST['notes'];
-                    $total = calculateTotal($_SESSION['cart']);
+                    $total = $_POST['total'];
+                    // $total = calculateTotal($_SESSION['cart']);
 
                     $crudObj = new Crud($pdo);
 
@@ -136,7 +173,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete') {
                                 <td><?= $order['email'] ?></td>
                                 <td><?= $order['address'] ?></td>
                                 <td><?= $order['notes'] ?></td>
-                                <td><?= number_format($order['total'], 2); ?>&euro;</td>
+                                <td><?= number_format( $order['total'], 2); ?>&euro;</td>
                                 <td><?= $order['created_at'] ?></td>
                             </tr>
                         <?php endforeach; ?>
@@ -191,7 +228,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete') {
                                     <td><?= $anorder['address'] ?></td>
                                     <td><?= $anorder['notes'] ?></td>
                                     <td><?= $sold['qty'] ?></td>
-                                    <td><?= number_format($sold['qty'] * $anorder['total'], 2); ?>&euro;</td>
+                                    <td><?= number_format($anorder['total'], 2); ?>&euro;</td>
                                     <td><?= $anorder['created_at'] ?></td>
                                 </tr>
                             <?php endforeach; endforeach; ?>
