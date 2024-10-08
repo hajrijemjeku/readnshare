@@ -90,12 +90,13 @@ if(isset($_POST['add-to-cart'])){
                 ?>
                 <div class="col-md-6 col-lg-12 mb-4">
                     <div class="list-group">
+                        
                         <div class="list-group-item d-flex justify-content-between align-items-center">
-                            <a href="book_details.php?book_id=<?= $book['id']; ?>" style="width:200px;">
+                            <a  <?php if($book['stock'] > 0):?> href="book_details.php?book_id=<?= $book['id']; ?>" <?php endif;?> style="width:200px;"> 
                                 <img src="./assets/images/books/<?= $book['image']; ?>" class="card-img-top p-3" style="height:250px" alt="<?= $book['image']; ?>">
                             </a>
                             <div class="book-details text-center" style="flex-grow: 1;">
-                                <a href="book_details.php?book_id=<?= $book['id']; ?>" style="text-decoration: none; color: inherit;">
+                                <a <?php if($book['stock'] > 0):?> href="book_details.php?book_id=<?= $book['id']; ?>" <?php endif;?> style="text-decoration: none; color: inherit;">
                                     <h5 class="mb-1"><?= $book['title']; ?></h5>
                                     <p class="mb-1">Price: <strong><?= number_format($book['price'], 2); ?> &euro;</strong></p>
                                     <p class="mb-1">Language: <strong><?= $book['language']; ?></strong></p>
