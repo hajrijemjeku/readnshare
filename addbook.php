@@ -253,7 +253,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'edit'){
                     
                 }else{
                     if(!(empty($image))){
-                        $insertauthor = (new Crud($pdo))->insert('person',['name','surname'], [$name, $surname]);
+                        $insertauthor = (new Crud($pdo))->insert('person',['name','surname', 'role'], [$name, $surname, 'author']);
                         if($insertauthor){
                             $insertauthor = (new Crud($pdo))->select('person',[],[],1,'')->fetch();
                         }
@@ -261,7 +261,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'edit'){
                         header('Location:books.php');
                         move_uploaded_file($tempname,'assets/images/books/'.$image);
                     }else{
-                        $insertauthor = (new Crud($pdo))->insert('person',['name','surname'], [$name, $surname]);
+                        $insertauthor = (new Crud($pdo))->insert('person',['name','surname', 'role'], [$name, $surname, 'author']);
                         if($insertauthor){
                             $lastinsertauthor = $pdo->lastInsertId();
                         }
