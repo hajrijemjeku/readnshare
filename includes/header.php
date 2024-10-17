@@ -33,11 +33,12 @@ spl_autoload_register(function ($class_name) {
                     if(!($email == $getemail['email'])){
                         $password = password_hash($password, PASSWORD_BCRYPT);
                         if($password){
-                            $sigunp = (new Crud($pdo))->insert('person',['name','surname','email','password'], [$firstname, $lastname, $email, $password]);
+                            $sigunp = (new Crud($pdo))->insert('person',['name','surname','email','password', 'role'], [$firstname, $lastname, $email, $password, 'user']);
     
                             if($sigunp){
                                 $_SESSION['success_message'] = '<h3 class="alert alert-info text-center"> You registered successfully! Please sign in to access our services. </h3>';
                                 header('Location:index.php');
+                                exit;
                                 
                             }else{
                                 $errors[] = "Something went wrong while inserting";
@@ -77,7 +78,7 @@ spl_autoload_register(function ($class_name) {
                                     $_SESSION['logged_in'] = true;
                                     $_SESSION['email'] = $email;
                                     $_SESSION['user_id'] = $checkacc['id'];
-                                    $_SESSION['is_admin'] = $checkacc['isadmin'];
+                                    $_SESSION['is_admin'] = ($checkacc['role'] == 'admin') ? 1 : 0;
                                     header('Location: index.php');
                                 }else{
                                     $errors[] = 'Wrong password';}
@@ -124,6 +125,7 @@ spl_autoload_register(function ($class_name) {
             if($modify_acc){
                 $_SESSION['success_message'] = '<h4 class="alert alert-info text-center mx-auto mt-2 w-75">Your account information has been updated successfully.!</h4>';
                 header('Location:index.php');
+                exit;
             }else{
                 $errors[] = 'Something went wrong while updating account informations!';
             }
@@ -301,9 +303,9 @@ spl_autoload_register(function ($class_name) {
                                     Dashboard
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="books.php">Manage Books</a></li>
-                                    <li><a class="dropdown-item" href="books.php">Manage Orders</a></li>
-                                    <li><a class="dropdown-item" href="books.php">Manage Users  </a></li>
+                                    <li><a class="dropdown-item" href="manage-books.php">Manage Books</a></li>
+                                    <li><a class="dropdown-item" href="manage-orders.php">Manage Orders</a></li>
+                                    <li><a class="dropdown-item" href="manage-users.php">Manage Users  </a></li>
                                 </ul>
                             </li>
                         </ul>
