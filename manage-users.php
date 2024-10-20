@@ -38,6 +38,72 @@ if(isset($_POST['edit-btn'])){
     if(isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == true):
     if(isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1): 
 ?>
+
+<?php 
+    if(isset($_POST['adduser-btn'])) {
+
+        $fullname = $_POST['fullname'];
+        
+        $email = $_POST['email'];
+        $password = $_POST['password'];
+        $role = $_POST['role'];
+        $crudObj = new CRUD($pdo);
+
+
+        if(!empty($fullname)){
+
+            $name_surname = explode(' ', $fullname);
+            $surname = array_pop($name_surname); // Last part of array always surname
+            $name = implode(' ', $name_surname); // The rest -> name
+
+            if(!empty($role)){
+
+                if(!empty($email)){
+                
+
+                    if(filter_var($email, FILTER_VALIDATE_EMAIL)){
+
+                        if(!empty($password)){
+                            $password = password_hash($password, PASSWORD_BCRYPT);
+                        
+                            $allusers = $crudObj->select('person',[],['email'=> $email],'','')->fetch();
+                            
+                            if($allusers){
+                                $errors[] = 'Ths email is already registered';
+                            }else{
+                                if($registerUser = $crudObj->insert('person',['name','surname','email','password','role'],[$name,$surname, $email, $password, $role])){
+                                    header('Location:manage-users.php');
+                                } else{
+                                    $errors[] = 'Something went wrong';
+                                }
+                            }
+
+                        }else{
+                            $errors[] = 'Fill password field!';
+                        }
+                    }else{
+                        $errors[] = 'Email was not valid';
+                    }
+                } else {
+                    if($registerUser = $crudObj->insert('person',['name','surname','role'],[$name, $surname, $role])){
+                        header('Location:manage-users.php');
+                    } else{
+                        $errors[] = 'Something went wrong';
+                    }
+                }
+
+            }else{                            
+                $errors[] = 'Fill user`s role';
+            }
+
+        }else{
+            $errors[] = 'Fullname field empty!';
+        }
+        
+    }
+        
+
+?>
     <section class="manage-users py-5">
         <div class="container">
         <?php if(count($errors) > 0): ?>
@@ -49,8 +115,60 @@ if(isset($_POST['edit-btn'])){
             <?php endif;?>
         <?php if(count($users) > 0): ?>
             <h2 class="text-center">Users (<?= count($users); ?>)</h2>
-        
         <div class="row mt-4">
+            <div class="col text-end">
+                <button type="button" class="btn btn-outline-success add-user-btn" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                    Add User
+                </button>
+            </div>
+        </div>
+        <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addUserModalLabel">Add User</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addUserForm" method="POST">
+                            <div class="mb-3">
+                                <label for="fullname" class="form-label">Fullname</label>
+                                <input type="text" class="form-control" name="fullname" id="fullname" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" name="email" id="email">
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" name="password" id="password">
+                            </div>
+                            <div class="mb-3">
+                                <label for="role" class="form-label">Role</label>
+                                <select name="role" id="role" class="form-control mb-3">
+                                    <option value="">Choose Role</option>
+                                    <?php
+                                        $roles = (new CRUD($pdo))->distinctSelect('person','role');
+                                        $roles = $roles->fetchAll();
+                                        
+                                        foreach($roles as $role):
+                                    ?>
+                                    <option value="<?= $role['role']; ?>"><?= $role['role']; ?></option>
+                                        <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" name="adduser-btn" class="btn btn-primary" form="addUserForm">Add User</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            
             <table class="table">
                 <tr>
                     <!-- <th>Id</th> -->
