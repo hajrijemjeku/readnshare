@@ -1,9 +1,33 @@
 <?php include('includes/header.php'); ?>
 <?php
+
 if (isset($_GET['action']) && $_GET['action'] == 'delete') {
     $element = $_GET['item'];
     unset($_SESSION['cart'][$element]);
     header('Location:my-items.php');
+}
+
+if(isset($_GET['action']) && $_GET['action'] == 'decrement'){
+    $element = $_GET['item'];
+    if($_SESSION['cart'][$element]['stock'] == 1){
+        unset($_SESSION['cart'][$element]);
+        header('Location:my-items.php');
+
+    } else {
+        $_SESSION['cart'][$element]['stock'] = $_SESSION['cart'][$element]['stock'] - 1 ;
+    }
+}
+
+if(isset($_GET['action']) && $_GET['action'] == 'increment'){
+    $element = $_GET['item'];
+    $getstock = (new Crud($pdo))->select('book',[],['id'=>$element],1,'')->fetch();
+    if($_SESSION['cart'][$element]['stock'] == $getstock['stock']){
+        echo '<script type="text/javascript">alert("INFO: Already all books from stock added to your order!");</script>';
+    }else{
+        $_SESSION['cart'][$element]['stock'] = $_SESSION['cart'][$element]['stock'] + 1 ;
+
+    }
+
 }
 
 if(isset($_POST['add-to-cart'])){
@@ -66,21 +90,27 @@ if(isset($_POST['add-to-cart'])){
                         <th>Title</th>
                         <th>Price</th>
                         <th>Qty</th>
-                        <th>Total</th>
+                        <th>Subtotal</th>
                         <th>Actions</th>
                     </tr>
 
                     <?php
                     $total = 0;
                     foreach ($_SESSION['cart'] as $book_id => $book) :
-                        $total += $book['price'] * $book['stock'];
+                        $subtotal = $book['price'] * $book['stock'];
+                        $total += $subtotal;
                     ?>
                         <tr>
                             <td><?= $book_id; ?></td>
                             <td><?= $book['title']; ?></td>
                             <td><?= number_format($book['price'], 2); ?>&euro;</td>
-                            <td><?= $book['stock']; ?></td>
-                            <td><?= number_format($book['price'] * $book['stock'], 2); ?>&euro;</td>
+                            <td>
+                                <a href='?action=decrement&item=<?= $book_id ?>' class='btn btn-sm btn-primary'>-</a>
+                                <?= $book['stock']; ?>
+                                <a href='?action=increment&item=<?=$book_id ?>' class='btn btn-sm btn-primary'>+</a>
+                            </td>
+
+                            <td><?= $subtotal; ?>&euro;</td>
                             <td>
                                 <a href='?action=delete&item=<?= $book_id ?>' class='btn btn-sm btn-danger' onclick="return confirm('Are you sure?');">x</a>
                             </td>
@@ -88,7 +118,7 @@ if(isset($_POST['add-to-cart'])){
                     <?php endforeach; ?>
                     <tr>
                         <td colspan='4' class='text-right'><strong>Total:</strong></td>
-                        <td colspan='2'><h5><?= number_format($total, 2); ?>&euro;</h5></td>
+                        <td colspan='2'><h5><?= $total; ?>&euro;</h5></td>
                     </tr>
                 </table>
 
