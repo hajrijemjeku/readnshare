@@ -63,39 +63,52 @@ spl_autoload_register(function ($class_name) {
 ?>
 <!-- SIGN IN -->
 <?php
-            if(isset($_POST['signin-btn'])){
-                $email = $_POST['email'];
-                $password = $_POST['password'];
+    if(isset($_POST['signin-btn'])){
+        $email = $_POST['email'];
+        $password = $_POST['password'];
+        $remember = isset($_POST['remember']) ? $_POST['remember'] : null;
 
 
-                if(!empty($email) && !empty($password)){
-                    if(filter_var($email, FILTER_VALIDATE_EMAIL)){
-                        $checkacc = (new Crud($pdo))->select('person',[],['email'=> $email],1,'')->fetch();
-                        if($checkacc){
-                            if($email == $checkacc['email']){
-                                $password = password_verify( $password, $checkacc   ['password']);
-                                if($password){
-                                    $_SESSION['logged_in'] = true;
-                                    $_SESSION['email'] = $email;
-                                    $_SESSION['user_id'] = $checkacc['id'];
-                                    $_SESSION['is_admin'] = ($checkacc['role'] == 'admin') ? 1 : 0;
-                                    header('Location: index.php');
-                                }else{
-                                    $errors[] = 'Wrong password';}
-                            } else{
-                                $errors[] = 'Email not found on our database';}
-                        }else{
-                            $errors[] = 'Email not found on our database';
-                        }
-                        
+        if(!empty($email) && !empty($password)){
+            if(filter_var($email, FILTER_VALIDATE_EMAIL)){
+                $checkacc = (new Crud($pdo))->select('person',[],['email'=> $email],1,'')->fetch();
+                if($checkacc){
+                    if($email == $checkacc['email']){
+                        $password = password_verify( $password, $checkacc   ['password']);
+                        if($password){
 
-                    }else{
-                        $errors[] =  "Please enter a valid email";}
-                } else {
-                    $errors[] =  "Please fill email and password fields";}
-            }
+                            $_SESSION['logged_in'] = true;
+                            $_SESSION['email'] = $email;
+                            $_SESSION['user_id'] = $checkacc['id'];
+                            $_SESSION['is_admin'] = ($checkacc['role'] == 'admin') ? 1 : 0;
+
+                            if($remember == 1){
+                                $expires = time() + 60;
+                                setcookie('remember', true, $expires);
+                                setcookie('user_id', $user['id'], $expires);
+                                setcookie('email', $email, $expires);
+                                setcookie('is_admin', $user['is_admin'], $expires);
         
-        ?>
+                            }
+
+                            
+                            header('Location: index.php');
+                        }else{
+                            $errors[] = 'Wrong password';}
+                    } else{
+                        $errors[] = 'Email not found on our database';}
+                }else{
+                    $errors[] = 'Email not found on our database';
+                }
+                
+
+            }else{
+                $errors[] =  "Please enter a valid email";}
+        } else {
+            $errors[] =  "Please fill email and password fields";}
+    }
+
+?>
 
 <!-- Log Out -->
  <?php
@@ -231,7 +244,7 @@ spl_autoload_register(function ($class_name) {
                     <?php endif; ?>
                     
                 </ul>
-                <div class="d-flex flex-row-reverse w-50" style="margin-right:80px;">
+                <div class="d-flex flex-row-reverse w-100" >
                     <?php if(basename($_SERVER['SCRIPT_FILENAME']) == "books.php" || basename($_SERVER['SCRIPT_FILENAME']) == "apibooks.php" ): ?>
                     <form class="d-flex my-2" name="search-form"  method="get" action="<?= $_SERVER['REQUEST_URI']; ?>">
                         <input class="form-control me-2" type="search" name="search-value" placeholder="Search by title or published year" aria-label="Search">
@@ -240,8 +253,8 @@ spl_autoload_register(function ($class_name) {
                     <?php endif; ?>
                     <div class="d-flex justify-content-center">
                     <?php if(!(isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true)): ?>
-                    <?php if(basename($_SERVER['SCRIPT_FILENAME']) !== "books.php"): ?>
-
+                    <?php if(basename($_SERVER['SCRIPT_FILENAME']) !== "books.php" && basename($_SERVER['SCRIPT_FILENAME']) !== "apibooks.php"): ?>
+                        
                     <div class="dropdown mx-2 w-50">
                         <button type="button" class="btn btn-success dropdown-toggle w-100" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
                             Sign In
@@ -257,15 +270,14 @@ spl_autoload_register(function ($class_name) {
                             </div>
                             <div class="mb-3">
                             <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="dropdownCheck2">
-                                <label class="form-check-label" for="dropdownCheck2">
-                                Remember me
-                                </label>
+                                <input type="checkbox" name="remember" class="form-check-input" id="remember" value="1">
+                                <label for="remember" class="form-check-label">Remember me</label>
                             </div>
                             </div>
                             <button type="submit" name="signin-btn" class="btn btn-primary">Sign in</button>
                         </form>
                     </div>
+                    
                     <div class="dropdown mx-2 w-50">
                         <button type="button" class="btn btn-success dropdown-toggle w-100" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
                             Sign Up
@@ -311,7 +323,7 @@ spl_autoload_register(function ($class_name) {
                         </ul>
                     </div>
                     <?php endif; ?>
-                    <?php if(basename($_SERVER['SCRIPT_FILENAME']) == "index.php" || basename($_SERVER['SCRIPT_FILENAME']) == "my-items.php" || basename($_SERVER['SCRIPT_FILENAME']) == "book_details.php" || basename($_SERVER['SCRIPT_FILENAME']) == "addbook.php"): ?>
+                    <?php if(basename($_SERVER['SCRIPT_FILENAME']) == "index.php" || basename($_SERVER['SCRIPT_FILENAME']) == "my-items.php" || basename($_SERVER['SCRIPT_FILENAME']) == "book_details.php" || basename($_SERVER['SCRIPT_FILENAME']) == "addbook.php" || basename($_SERVER['SCRIPT_FILENAME']) == "manage-orders.php" || basename($_SERVER['SCRIPT_FILENAME']) == "manage-books.php" || basename($_SERVER['SCRIPT_FILENAME']) == "manage-users.php"): ?>
 
                     <div class="dropdown mx-2 collapse navbar-collapse">
                         <button type="button" class="btn btn-success dropdown-toggle w-100" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside"> Modify Account </button>
@@ -372,14 +384,14 @@ spl_autoload_register(function ($class_name) {
                         
                     </div>
 
-                    <?php if(isset($_SESSION['is_admin']) && $_SESSION['is_admin'] === 0): ?>
-                    <div class="collapse navbar-collapse  mx-2  ">
+                    <?php //if(isset($_SESSION['is_admin']) && $_SESSION['is_admin'] === 0): ?>
+                    <div class="collapse navbar-collapse w-100  ">
                         <form action="addbook.php" method="post">
                             <button type="submit" name="addbook" class="btn btn-success w-100">Add Book</button>
                         </form>
 
                     </div>
-                    <?php endif; ?>
+                    <?php //endif; ?>
                     
                     <!-- <div class="collapse navbar-collapse  mx-2  ">
                         <form action="<?= $_SERVER['PHP_SELF']; ?>" method="get">
