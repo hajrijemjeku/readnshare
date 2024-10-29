@@ -88,25 +88,28 @@ if(isset($_POST['add-to-cart'])){
                     <tr>
                         <th>#</th>
                         <th>Title</th>
-                        <th>Price</th>
-                        <th>Qty</th>
+                        <th>Price per book</th>
+                        <th>Stock</th>
+                        <th>Quantity</th>
                         <th>Subtotal</th>
-                        <th>Actions</th>
+                        <th>Delete</th>
                     </tr>
 
                     <?php
                     $total = 0;
-                    foreach ($_SESSION['cart'] as $book_id => $book) :
-                        $subtotal = $book['price'] * $book['stock'];
+                    foreach ($_SESSION['cart'] as $book_id => $addedbook) :
+                        $cartbook = (new Crud($pdo))->select('book',[],['id'=>$book_id],1,'')->fetch();
+                        $subtotal = $addedbook['price'] * $addedbook['stock'];
                         $total += $subtotal;
                     ?>
                         <tr>
                             <td><?= $book_id; ?></td>
-                            <td><?= $book['title']; ?></td>
-                            <td><?= number_format($book['price'], 2); ?>&euro;</td>
+                            <td><?= $addedbook['title']; ?></td>
+                            <td><?= $cartbook['price']; ?>&euro;</td>
+                            <td><?= $cartbook['stock']?></td>
                             <td>
                                 <a href='?action=decrement&item=<?= $book_id ?>' class='btn btn-sm btn-primary'>-</a>
-                                <?= $book['stock']; ?>
+                                <?= $addedbook['stock']; ?>
                                 <a href='?action=increment&item=<?=$book_id ?>' class='btn btn-sm btn-primary'>+</a>
                             </td>
 
@@ -117,7 +120,7 @@ if(isset($_POST['add-to-cart'])){
                         </tr>
                     <?php endforeach; ?>
                     <tr>
-                        <td colspan='4' class='text-right'><strong>Total:</strong></td>
+                        <td colspan='5' class='text-right'><strong>Total:</strong></td>
                         <td colspan='2'><h5><?= $total; ?>&euro;</h5></td>
                     </tr>
                 </table>
