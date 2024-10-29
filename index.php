@@ -106,7 +106,6 @@ if(isset($_POST['add-to-cart'])){
                                 <input type="hidden" name="book_id" value="<?= $book['id']; ?>">
                                 <input type="hidden" name="book_title" value="<?= $book['title']; ?>">
                                 <input type="hidden" name="book_price" value="<?= $book['price']; ?>">
-                                <!-- <input type="hidden" name="book_stock" value="<?= $book['stock']; ?>"> -->
                                  <?php if($book['stock'] > 0): ?>
                                 <input type="number" name="book_stock" value="1" min="1" max="<?= $stock['stock'];?>" class="form-control me-2" style="width: 60px;">
                                 <button name="add-to-cart" type="submit" class="btn btn-success">Add to Cart</button>
@@ -140,6 +139,8 @@ if(isset($_POST['add-to-cart'])){
                       $bs_books = $crudObj->select('book',[],['categoryid'=>3] ,3, '');
                       if($bs_books):
                       while($bs_book = $bs_books->fetch()):
+                        $stock = $crudObj->select('book',['stock'],['id'=>$bs_book['id']],'','')->fetch();
+
                         
                       
                  ?>
@@ -147,7 +148,7 @@ if(isset($_POST['add-to-cart'])){
                     <div class="card" style="width: 18rem;">
                         
                         <img src="./assets/images/books/<?php echo $bs_book['image']; ?>" class="card-img-top" alt="..." height="300px">
-                        <a href="book_details.php?book_id=<?= $book['id']; ?>" class="btn btn-secondary mt-3 w-50" style="margin-left:70px;"> View Details</a>
+                        <a href="book_details.php?book_id=<?= $bs_book['id']; ?>" class="btn btn-secondary mt-3 w-50" style="margin-left:70px;"> View Details</a>
                     <div class="card-body">
                             <h5 class="card-title"><?php echo $bs_book['title'] ?></h5>
                             <p class="card-text"> <?php echo number_format($bs_book['price'],2);  ?> &euro;</p>
@@ -155,9 +156,13 @@ if(isset($_POST['add-to-cart'])){
                                 <input type="hidden" name="book_id" id="book_id" value="<?= $bs_book['id'] ?>">
                                 <input type="hidden" name="book_title" id="book_title" value="<?= $bs_book['title'] ?>">
                                 <input type="hidden" name="book_price" id="book_price" value="<?= $bs_book['price'] ?>">
-                                <input type="hidden" name="book_stock" id="book_stock" value="<?= $bs_book['stock'] ?>"> <!--Kjo qe nese don e i shtu ne cart books ma shume se qe kemi ne stock ne db -->
-                                <input type="number" name="stock" id="stock" value="1" min="0" class="form-control">
-                                <button name="add-to-cart" type="submit" class="btn btn-primary mx-2">Add to cart</button>
+
+                                <?php if($bs_book['stock'] > 0): ?>
+                                <input type="number" name="book_stock" value="1" min="1" max="<?= $stock['stock'];?>" class="form-control me-2" style="width: 60px;">
+                                <button name="add-to-cart" type="submit" class="btn btn-primary mx-2">Add to Cart</button>
+                                <?php endif; if($bs_book['stock'] == 0):?>
+                                    <h5 class="mb-1" style="color:red;">Out of Stock!</h5>
+                                    <?php endif; ?>
                              </form>
                         </div>
                     </div>
@@ -250,11 +255,6 @@ if(isset($_POST['add-to-cart'])){
             <p class="mt-3">Stay updated with the latest books and offers!</p>
         </div>
     </div>
-
-
-
-
-
 
 
 
