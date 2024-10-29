@@ -27,52 +27,54 @@
             }
             if (isset($getbooks) && !empty($getbooks)) {
                 foreach($getbooks as $getbook):
+
+                    $categoryname = (new Crud($pdo))-> select('category',[],['id'=> $getbook['categoryid']],1,'')->fetch();
+                    $genrename = (new Crud($pdo))-> select('genre',[],['id'=> $getbook['genreid']], 1,'')->fetch();
+                    
         
         
         ?>
 
-        <div class="row mb-5">
-            <!-- Column 2: One big image -->
-            <div class="d-flex justify-content-center">
-                <img id="big-image" src="./assets/images/books/<?= $getbook['image']; ?>" class="img-fluid mx-auto" alt="..." style="height:400px; width:300px; ">
+<div class="container mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 d-flex flex-column align-items-center">
+            <div class="d-flex flex-column align-items-center">
+                <!-- Big Image -->
+                <img id="big-image" src="./assets/images/books/<?= $getbook['image']; ?>" class="img-fluid mb-3" alt="Book Image" style="max-height: 400px; width: auto; border-radius: 10px;">
 
-            </div>
-                
-                
+                <!-- Book Info -->
+                <div class="info-box p-4 border rounded text-center" style="width: 100%;">
+                    <h2 class="font-weight-bold"><?= $getbook['title']; ?></h2>
+                    <p><strong>Condition:</strong> <?= ($getbook['isnew'] == 0) ? 'Old' : 'New'; ?></p>
+                    <p><strong>Price:</strong> <?= $getbook['price']; ?> &euro;</p>
+                    <p><strong>Category:</strong> <?= $categoryname['name']; ?></p>
+                    <p><strong>Stock:</strong> <?= $getbook['stock']; ?></p>
+                    <p><strong>Published Year:</strong> <?= $getbook['published_year']; ?></p>
+                    <p><strong>Language:</strong> <?= $getbook['language']; ?></p>
+                    <p><strong>Genre:</strong> <?= $genrename['name']; ?></p>
+                    <p><strong>Description:</strong> <?= $getbook['description']; ?></p>
 
-            <!-- Column 3: Book info -->
-                <div class="p-3 border mt-5 mx-auto w-50 d-flex flex-column justify-content-center align-items-center">
-                    <h4>Book Info</h4>
-                    <p><strong>Title:    </strong>  <?php echo $getbook['title']; ?></p>
-                    <p><strong>Price:   </strong>  <?php echo $getbook['price']; ?> &euro;</p>
-                    <p><strong>Category:    </strong>  <?php echo $getbook['categoryid']; ?></p>
-                    <p><strong>BookId:    </strong>  <?php echo $getbook['id']; ?></p>
-
-                <!-- </div>
-                <div class="p-3 border mt-3 w-50"> -->
-
-                    <?php if(isset($_SESSION['logged_in']) && ($_SESSION['logged_in'] === true)): ?>
-                        <form action="my-items.php" method="POST">
-                            <input type="hidden" name="book_id" id="book_id" value="<?= $getbook['id'] ?>">
+                    <?php if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true): ?>
+                        <form action="my-items.php" method="POST" class="mt-3">
+                            <input type="hidden" name="book_id" value="<?= $getbook['id'] ?>">
                             <input type="hidden" name="book_title" value="<?= $getbook['title'] ?>">
-                            <input type="hidden" name="book_price"  value="<?= $getbook['price'] ?>">
-                            <?php if($getbook['stock'] > 0): ?>
-                                <input type="number" name="book_stock" value="1" min="1" max="<?= $getbook['stock'];?>" class="form-control d-inline" style="width: 60px; margin-top:10px;">
-                                <button name="add-to-cart" type="submit" class="btn btn-success mb-1">Add to Cart</button>
-                            <?php endif; if($getbook['stock'] == 0):?>
-                                <h5 class="mb-1" style="color:red;">Out of Stock!</h5>
-                            <?php endif; ?>
+                            <input type="hidden" name="book_price" value="<?= $getbook['price'] ?>">
 
+                            <?php if ($getbook['stock'] > 0): ?>
+                                <input type="number" name="book_stock" value="1" min="1" max="<?= $getbook['stock']; ?>" class="form-control mb-2" style="width: 80px; display: inline-block;">
+                                <button name="add-to-cart" type="submit" class="btn btn-primary">Add to Cart</button>
+                            <?php else: ?>
+                                <p class="text-danger">Out of Stock!</p>
+                            <?php endif; ?>
                         </form>
                     <?php endif; ?>
-
-                </div>
-            <div class="row mt-4">
-                <div class="col-12">
-                    <hr class="mx-auto mt-5 border-secondary">
                 </div>
             </div>
         </div>
+    </div>
+    <hr class="my-4">
+</div>
+
         <?php endforeach; } else {
             echo "<h2>No books found.</h2>";
         } ?>
