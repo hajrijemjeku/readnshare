@@ -240,8 +240,6 @@
                                                 <input type="hidden" name="size" value="<?= $a_book['genreid'] ?>">
                                                 <input type="hidden" name="price" value="<?= $a_book['price'] ?>">
                                                 <input type="hidden" name="stock" value="<?= $a_book['stock'] ?>">
-
-                                                <button name="add-to-cart" id="add-to-cart" class="btn-cart" type="submit"><i class="fa-solid fa-cart-shopping"></i></button>
                                             </form>
                                         <?php endif; ?>
                                     </div>
