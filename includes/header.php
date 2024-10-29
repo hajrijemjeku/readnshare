@@ -244,7 +244,7 @@ spl_autoload_register(function ($class_name) {
                     <?php endif; ?>
                     
                 </ul>
-                <div class="d-flex flex-row-reverse w-100" >
+                <div class="d-flex flex-row-reverse w-100">
                     <?php if(basename($_SERVER['SCRIPT_FILENAME']) == "books.php" || basename($_SERVER['SCRIPT_FILENAME']) == "apibooks.php" ): ?>
                     <form class="d-flex my-2" name="search-form"  method="get" action="<?= $_SERVER['REQUEST_URI']; ?>">
                         <input class="form-control me-2" type="search" name="search-value" placeholder="Search by title or published year" aria-label="Search">
@@ -259,7 +259,7 @@ spl_autoload_register(function ($class_name) {
                         <button type="button" class="btn btn-success dropdown-toggle w-100" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
                             Sign In
                         </button>
-                        <form class="dropdown-menu p-4 mt-2" method="post" action="<?= $_SERVER['PHP_SELF']; ?>" style="width:250px;">
+                        <form class="dropdown-menu p-4 mt-2" method="post" action="<?= $_SERVER['PHP_SELF']; ?>" style="width:213px; margin-left:0px;">
                             <div class="mb-3">
                             <label for="exampleDropdownFormEmail" class="form-label">Email address</label>
                             <input type="email" name="email" class="form-control" id="exampleDropdownFormEmail" placeholder="email@example.com">
@@ -282,7 +282,7 @@ spl_autoload_register(function ($class_name) {
                         <button type="button" class="btn btn-success dropdown-toggle w-100" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
                             Sign Up
                         </button>
-                        <form class="dropdown-menu p-4 mt-2" style="width:250px;"  method="post" action="<?= $_SERVER['PHP_SELF']; ?>">
+                        <form class="dropdown-menu p-4 mt-2" style="width:250px; margin-left:-145px;"  method="post" action="<?= $_SERVER['PHP_SELF']; ?>">
                             <div class="mb-3">
                             <label for="exampleDropdownFormName2" class="form-label">First Name</label>
                             <input type="text" name="firstname" class="form-control" id="exampleDropdownFormName2" placeholder="John">
