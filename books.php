@@ -142,14 +142,14 @@
                             $filterConditions['isnew'] = $condition;
                         } 
                         if (!empty($minprice)) {
-                            $filterConditions['price >= '] = $minprice;
+                            $filterConditions['FORMAT(price, 2) >= '] = $minprice;
                         }
                         if (!empty($maxprice)) {
-                            $filterConditions['price <= '] = $maxprice;
+                            $filterConditions['FORMAT(price, 2) <= '] = $maxprice;
                         }
                         
         
-                        $all_books = $crudObj->search('book', [], $filterConditions, '');
+                        $all_books = $crudObj->select('book', [], $filterConditions, '','');
                         $all_books = $all_books->fetchAll();
 
                         if (count($all_books) == 0) {
