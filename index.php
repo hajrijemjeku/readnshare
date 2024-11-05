@@ -280,7 +280,7 @@ if(isset($_POST['add-to-cart'])){
                 }else{
                     $subscribeemail = (new Crud($pdo))->insert('subscribers',['email'],[$email]);
                     if($subscribeemail){
-                        $_SESSION['success_message'] = '<h3 class="alert alert-info text-center"> You subscribed successfully! </h3>';
+                        $_SESSION['success_message'] = '<h3 class="alert alert-info text-center"> Email ' .$email. ' subscribed successfully! </h3>';
                         header('Location:index.php');
                     }else{
                         $errors[] = 'Something went wrong! Please try again to subscribe!';
