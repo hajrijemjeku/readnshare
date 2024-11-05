@@ -142,10 +142,10 @@
                             $filterConditions['isnew'] = $condition;
                         } 
                         if (!empty($minprice)) {
-                            $filterConditions['FORMAT(price, 2) >= '] = $minprice;
+                            $filterConditions['ROUND(price, 2) >= '] = $minprice;
                         }
                         if (!empty($maxprice)) {
-                            $filterConditions['FORMAT(price, 2) <= '] = $maxprice;
+                            $filterConditions['ROUND(price, 2) <= '] = $maxprice;
                         }
                         
         
