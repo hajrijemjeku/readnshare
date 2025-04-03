@@ -90,7 +90,7 @@
             if ($reviews) {
                 $reviews = $reviews->fetchAll();
                 foreach ($reviews as $review):
-                    $getuser = (new Crud($pdo))->select('person', [], ['id' => $review['userid']], 1, '')->fetch(); // Fetch user info for each review
+                    $getuser = (new Crud($pdo))->select('person', [], ['id' => $review['personid']], 1, '')->fetch(); // Fetch user info for each review
             ?>
             <div class="col-12 mb-4">
                 <div class="border p-3 rounded" style="background-color: #f8f9fa;">
@@ -148,7 +148,7 @@
         $bookid = $_POST['bookid'];
 
         if(!empty($rating) && !empty($comment)){
-            $addreview = (new Crud($pdo))->insert('review',['rating', 'comment','bookid', 'userid'], [$rating, $comment, $bookid, $_SESSION['user_id']]);
+            $addreview = (new Crud($pdo))->insert('review',['rating', 'comment','bookid', 'personid'], [$rating, $comment, $bookid, $_SESSION['user_id']]);
 
             if($addreview){
                 header('Location: ' . $_SERVER['PHP_SELF'] . '?book_id=' . $bookid);

@@ -1,7 +1,7 @@
 <?php session_start();
 include 'db.php';
 ob_start();
-//error_reporting(E_ALL);
+error_reporting (E_ALL & ~E_DEPRECATED);
 $errors = [];    
 
 //show a message if user registered successfully or modified info acc or ...!
